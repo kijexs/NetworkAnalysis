@@ -76,3 +76,32 @@ def double_sweep_diameter(graph, cc_vertices=None, percentile=90):
 
     return diam, compute_percentile(distances, percentile)
 
+def sample_distances(graph, cc_vertices, sample_size=500):
+    """
+    Вычисляет расстояния между случайными парами вершин.
+    Возвращает список расстояний.
+    """
+    vertices = list(cc_vertices)
+    if len(vertices) < 2:
+        return []
+    pairs = random.choices(vertices, k=2*sample_size)
+    distances = []
+    for i in range(sample_size):
+        u = pairs[2*i]
+        v = pairs[2*i+1]
+        if u == v:
+            continue
+        dist = bfs(graph, u)
+        if v in dist:
+            distances.append(dist[v])
+    return distances
+
+def sampled_diameter_and_percentile(graph, cc_vertices, sample_size=500, percentile=90):
+    """
+    Возвращает (оценка диаметра, заданный процентиль)
+    """
+    dists = sample_distances(graph, cc_vertices, sample_size)
+    if not dists:
+        return 0, 0
+    dists.sort()
+    return max(dists), compute_percentile(dists, percentile)
