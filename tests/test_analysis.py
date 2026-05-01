@@ -1,8 +1,8 @@
 # тесты метрик
 from src.analysis import (
     connected_components,
-    largest_cc_size,
     double_sweep_diameter,
+    largest_cc_size,
     sampled_diameter_and_percentile,
     snowball_diameter_percentile,
 )
