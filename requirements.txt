@@ -1,0 +1,9 @@
+pytest
+pytest-cov
+matplotlib
+networkx
+black
+isort
+flake8
+flake8-black
+flake8-pyproject
