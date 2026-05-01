@@ -1,8 +1,9 @@
 # метрики (1 часть задания)
-from src.utils import bfs
-from src.graph import Graph
-
 import random
+
+from src.graph import Graph
+from src.utils import bfs
+
 
 def connected_components(graph):
     """
@@ -35,6 +36,7 @@ def largest_cc_size(graph):
     fraction = max_size / n if n > 0 else 0.0
     return max_size, fraction
 
+
 def largest_cc_vertices(graph):
     """
     Возвращает множество вершин наибольшей компоненты
@@ -43,7 +45,7 @@ def largest_cc_vertices(graph):
     comp = connected_components(graph)
     if not comp:
         return set()
-    return max(comp, key=len)   # компонента с максимумом вершин
+    return max(comp, key=len)  # компонента с максимумом вершин
 
 
 def compute_percentile(sorted_list, percentile):
@@ -55,6 +57,7 @@ def compute_percentile(sorted_list, percentile):
         return 0
     idx = int(len(sorted_list) * percentile / 100)
     return sorted_list[min(idx, len(sorted_list) - 1)]
+
 
 def double_sweep_diameter(graph, cc_vertices=None, percentile=90):
     """
@@ -77,6 +80,7 @@ def double_sweep_diameter(graph, cc_vertices=None, percentile=90):
 
     return diam, compute_percentile(distances, percentile)
 
+
 def sample_distances(graph, cc_vertices, sample_size=500):
     """
     Вычисляет расстояния между случайными парами вершин.
@@ -85,17 +89,18 @@ def sample_distances(graph, cc_vertices, sample_size=500):
     vertices = list(cc_vertices)
     if len(vertices) < 2:
         return []
-    pairs = random.choices(vertices, k=2*sample_size)
+    pairs = random.choices(vertices, k=2 * sample_size)
     distances = []
     for i in range(sample_size):
-        u = pairs[2*i]
-        v = pairs[2*i+1]
+        u = pairs[2 * i]
+        v = pairs[2 * i + 1]
         if u == v:
             continue
         dist = bfs(graph, u)
         if v in dist:
             distances.append(dist[v])
     return distances
+
 
 def sampled_diameter_and_percentile(graph, cc_vertices, sample_size=500, percentile=90):
     """
@@ -106,6 +111,7 @@ def sampled_diameter_and_percentile(graph, cc_vertices, sample_size=500, percent
         return 0, 0
     dists.sort()
     return max(dists), compute_percentile(dists, percentile)
+
 
 def snowball_sample(graph, cc_vertices, target_size=500):
     """
@@ -138,6 +144,7 @@ def snowball_sample(graph, cc_vertices, target_size=500):
 
     return current
 
+
 def create_subgraph(original_graph, vertices):
     """
     Создаёт новый граф с данным множеством вершин
@@ -152,6 +159,7 @@ def create_subgraph(original_graph, vertices):
                     if u < v and not sub.has_edge(u, v):
                         sub.add_edge(u, v)
     return sub
+
 
 def snowball_diameter_percentile(graph, cc_vertices, target_size=500, percentile=90):
     """

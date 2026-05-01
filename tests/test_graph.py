@@ -23,7 +23,6 @@ def test_add_edge_directed():
 
 
 def test_from_file_undirected(tmp_path):
-    # tmp_path – фикстура pytest для временной папки
     file = tmp_path / "test.edges"
     file.write_text("1 2\n2 3\n3 1\n")
     g = Graph.from_file(str(file), directed=False)
