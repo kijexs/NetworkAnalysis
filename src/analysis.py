@@ -1,5 +1,6 @@
 # метрики (1 часть задания)
 from src.utils import bfs
+from src.graph import Graph
 
 import random
 
@@ -105,3 +106,61 @@ def sampled_diameter_and_percentile(graph, cc_vertices, sample_size=500, percent
         return 0, 0
     dists.sort()
     return max(dists), compute_percentile(dists, percentile)
+
+def snowball_sample(graph, cc_vertices, target_size=500):
+    """
+    Построение подграфа методом снежного кома.
+    Возвращает множество вершин подграфа.
+    """
+    if not cc_vertices:
+        return set()
+    vertices_list = list(cc_vertices)
+    # случайная вершина и один её сосед
+    start = random.choice(vertices_list)
+    neighbors = list(graph.neighbors(start))
+    if not neighbors:
+        seed = {start}
+    else:
+        second = random.choice(neighbors)
+        seed = {start, second}
+
+    current = set(seed)
+    while len(current) < target_size:
+        # все соседи текущего множества, которых ещё нет в current
+        frontier = set()
+        for u in current:
+            for v in graph.neighbors(u):
+                if v not in current:
+                    frontier.add(v)
+        if not frontier:
+            break
+        current.update(frontier)
+
+    return current
+
+def create_subgraph(original_graph, vertices):
+    """
+    Создаёт новый граф с данным множеством вершин
+    """
+    sub = Graph(directed=original_graph.directed)
+    for u in vertices:
+        for v in original_graph.neighbors(u):
+            if v in vertices:
+                if sub.directed:
+                    sub.add_edge(u, v)
+                else:
+                    if u < v and not sub.has_edge(u, v):
+                        sub.add_edge(u, v)
+    return sub
+
+def snowball_diameter_percentile(graph, cc_vertices, target_size=500, percentile=90):
+    """
+    Оценка диаметра и процентиля по подграфу
+    """
+    sub_vertices = snowball_sample(graph, cc_vertices, target_size)
+    # строим подграф и берём его макс. компоненту
+    sub = create_subgraph(graph, sub_vertices)
+    sub_cc = largest_cc_vertices(sub)
+    if not sub_cc:
+        return 0, 0
+    return double_sweep_diameter(sub, sub_cc, percentile)
