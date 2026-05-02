@@ -1,7 +1,10 @@
 # тесты метрик
 from src.analysis import (
+    average_clustering_coefficient,
     connected_components,
+    count_triangles,
     double_sweep_diameter,
+    global_clustering_coefficient,
     largest_cc_size,
     sampled_diameter_and_percentile,
     snowball_diameter_percentile,
@@ -70,3 +73,48 @@ def test_snowball():
     # в полном графе диаметр == 1
     assert diam == 1
     assert perc == 1
+
+
+def test_count_triangles_empty():
+    g = Graph()
+    assert count_triangles(g) == 0
+
+
+def test_count_triangles_one():
+    g = Graph()
+    g.add_edge(1, 2)
+    g.add_edge(2, 3)
+    g.add_edge(3, 1)
+    assert count_triangles(g) == 1
+
+
+def test_count_triangles_two():
+    g = Graph()
+    # треугольник 1-2-3
+    g.add_edge(1, 2)
+    g.add_edge(2, 3)
+    g.add_edge(3, 1)
+    # треугольник 2-4-5
+    g.add_edge(2, 4)
+    g.add_edge(4, 5)
+    g.add_edge(5, 2)
+    assert count_triangles(g) == 2
+
+
+def test_average_clustering():
+    g = Graph()
+    g.add_edge(1, 2)
+    g.add_edge(2, 3)
+    g.add_edge(3, 1)
+    # у каждой вершины степень 2, число ребер м/у соседями 1
+    # -> cl = 2*1/(2*1) = 1
+    assert average_clustering_coefficient(g) == 1.0
+
+
+def test_global_clustering():
+    g = Graph()
+    g.add_edge(1, 2)
+    g.add_edge(2, 3)
+    g.add_edge(3, 1)
+    # треугольник 1, троек 3 -> global_clustering=3*1/3=1
+    assert global_clustering_coefficient(g) == 1.0
