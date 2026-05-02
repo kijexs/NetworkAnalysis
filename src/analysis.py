@@ -172,3 +172,71 @@ def snowball_diameter_percentile(graph, cc_vertices, target_size=500, percentile
     if not sub_cc:
         return 0, 0
     return double_sweep_diameter(sub, sub_cc, percentile)
+
+
+def count_triangles(graph):
+    """
+    Подсчет числа треугольников
+    путем сортировки ребер по степеням
+    """
+    triangles = 0
+    # для каждой вершины ищем соседей у который степень больше
+    # или при равных степ. номер больше
+    for u in graph.nodes():
+        deg_u = graph.degree(u)
+        larger_neighbors = []
+        for v in graph.neighbors(u):
+            deg_v = graph.degree(v)
+            if deg_v > deg_u or (deg_v == deg_u and v > u):
+                larger_neighbors.append(v)
+        for i in range(len(larger_neighbors)):
+            v = larger_neighbors[i]
+            for j in range(i + 1, len(larger_neighbors)):
+                w = larger_neighbors[j]
+                if graph.has_edge(v, w):
+                    triangles += 1
+    return triangles
+
+
+def average_clustering_coefficient(graph, vertices=None):
+    """
+    Считает средний кластерный коэффициент
+    """
+    count = 0
+    total_cl_u = 0.0
+    # если не заданы работаем со всем графом
+    if vertices is None:
+        vertices = graph.nodes()
+    for u in vertices:
+        neighbors = graph.neighbors(u)
+        k = len(neighbors)
+        if k < 2:
+            cl_u = 0.0
+        else:
+            edges = 0
+            neigh_list = list(neighbors)
+            for i in range(len(neigh_list)):
+                v = neigh_list[i]
+                for j in range(i + 1, len(neigh_list)):
+                    w = neigh_list[j]
+                    if graph.has_edge(v, w):
+                        edges += 1
+            cl_u = 2 * edges / (k * (k - 1))
+        total_cl_u += cl_u
+        count += 1
+    return total_cl_u / count if count > 0 else 0.0
+
+
+def global_clustering_coefficient(graph):
+    """
+    Считает глобальный кластерный коэффициент
+    = число закрытых троек / число всех троек
+    """
+    triangles = count_triangles(graph)
+    triples = 0
+    for u in graph.nodes():
+        k = graph.degree(u)
+        triples += k * (k - 1) // 2
+    if triples == 0:
+        return 0.0
+    return triangles * 3.0 / triples
