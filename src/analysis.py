@@ -1,5 +1,6 @@
 # метрики (1 часть задания)
 import random
+from collections import defaultdict
 
 from src.graph import Graph
 from src.utils import bfs
@@ -10,15 +11,16 @@ def connected_components(graph):
     Возвращает список компонент слабой связности.
     Каждая компонента - множество вершин.
     """
-    unvisited = set(graph.nodes())
+    visited = set()
     components = []
 
-    while unvisited:
-        start = unvisited.pop()
-        dist = bfs(graph, start)  # возвращает {вершина: расстояние}
-        comp = set(dist.keys())  # множество достижимых вершин
+    for node in graph.nodes():
+        if node in visited:
+            continue
+        dist = bfs(graph, node)  # возвращает {вершина: расстояние}
+        comp = set(dist)  # множество достижимых вершин
+        visited.update(comp)
         components.append(comp)
-        unvisited -= comp
 
     return components
 
