@@ -27,7 +27,7 @@ class Graph:
         return v in self.adj.get(u, set())
 
     def neighbors(self, u: int) -> Set[int]:
-        return self.adj.get(u, set()).copy()
+        return self.adj.get(u, set())
 
     def degree(self, u: int) -> int:
         return len(self.adj.get(u, set()))
@@ -56,12 +56,13 @@ class Graph:
     def from_file(filename: str, directed: bool = False) -> "Graph":
         # читает граф из файла, где каждая строка: u v
         graph = Graph(directed)
+        delimiter = "," if filename.lower().endswith(".csv") else None
         with open(filename, "r") as f:
             for line in f:
                 line = line.strip()
                 if not line or line.startswith("#"):  # пропускаем комментарии
                     continue
-                parts = line.split()
+                parts = line.split(delimiter)
                 if len(parts) < 2:
                     continue
                 try:
