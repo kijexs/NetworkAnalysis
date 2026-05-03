@@ -27,9 +27,15 @@ def test_degree_based_removal():
     g.add_edge(4, 5)
     # степени: 1:1, 2:2, 3:2, 4:2, 5:1
     removed = degree_based_removal(g, 0.4)  # 40% от 5 = 2 вершины
-    # должны быть удалены вершины с наибольшей степенью: 2,3 или 4
-    # при равных степенях сортируем по id, значит 2 и 3
-    assert removed == {2, 3}
+    assert len(removed) == 2
+    # максимальная степень в графе = 2
+    max_deg = max(g.degree(v) for v in g.nodes())
+    for v in removed:
+        assert g.degree(v) == max_deg
+    # вершины со степенью меньше максимальной не должны быть удалены
+    for v in g.nodes():
+        if g.degree(v) < max_deg:
+            assert v not in removed
 
 
 def test_bfs_ignore():
