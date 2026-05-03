@@ -4,6 +4,7 @@ from collections import defaultdict
 
 from src.graph import Graph
 from src.utils import bfs
+from src.utils import bfs_ignore
 
 
 def connected_components(graph):
@@ -25,6 +26,25 @@ def connected_components(graph):
     return components
 
 
+def connected_components_ignore(graph, ignore_set):
+    """
+    Возвращает список компонент слабой связности,
+    игнорируя вершины из ignore_set.
+    """
+    visited = set()
+    components = []
+
+    for node in graph.nodes():
+        if node in ignore_set or node in visited:
+            continue
+        dist = bfs_ignore(graph, node, ignore_set)
+        if dist:
+            comp = set(dist.keys())
+            visited.update(comp)
+            components.append(comp)
+
+    return components
+
 def largest_cc_size(graph):
     """
     Возвращает (размер максимальной компоненты,
@@ -38,6 +58,19 @@ def largest_cc_size(graph):
     fraction = max_size / n if n > 0 else 0.0
     return max_size, fraction
 
+def largest_cc_size_ignore(graph, ignore_set):
+    """
+    Возвращает (размер максимальной компоненты,
+    доля от общего числа вершин),
+    исключая удалённые вершины из рассмотрения.
+    """
+    comp = connected_components_ignore(graph, ignore_set)
+    if not comp:
+        return 0, 0.0
+    n = graph.number_of_nodes() - len(ignore_set)
+    max_size = max(len(c) for c in comp)
+    fraction = max_size / n if n > 0 else 0.0
+    return max_size, fraction
 
 def largest_cc_vertices(graph):
     """
