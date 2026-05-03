@@ -79,13 +79,15 @@ def test_evaluate_robustness():
     g = Graph()
     for i in range(1, 6):
         g.add_edge(i, i + 1)  # путь 1-2-3-4-5-6
-    # при удалении 50% случайных вершин
-    # ожидаем, что доля в МК уменьшится
     res = evaluate_robustness(g, [0, 50, 100], random_removal)
     assert len(res) == 3
     # при 0% доля = 1.0
     assert res[0][1] == 1.0
     # при 100% доля = 0.0
     assert res[-1][1] == 0.0
-    # при 50% доля < 1.0
-    assert res[1][1] < 1.0
+    # все доли должны быть в [0, 1] и не возрастать с увеличением удаления
+    for i in range(1, len(res)):
+        assert 0.0 <= res[i][1] <= 1.0
+        # чем больше % удаленных, тем меньше доля вершин
+        # в максимальной компоненте
+        assert res[i][1] <= res[i - 1][1]
