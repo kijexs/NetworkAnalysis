@@ -3,6 +3,8 @@ from src.analysis import (
     average_clustering_coefficient,
     connected_components,
     count_triangles,
+    degree_distribution,
+    degree_stats,
     double_sweep_diameter,
     global_clustering_coefficient,
     largest_cc_size,
@@ -118,3 +120,25 @@ def test_global_clustering():
     g.add_edge(3, 1)
     # треугольник 1, троек 3 -> global_clustering=3*1/3=1
     assert global_clustering_coefficient(g) == 1.0
+
+
+def test_degree_stats():
+    g = Graph()
+    g.add_edge(1, 2)
+    g.add_edge(2, 3)
+    # степени: 1:1, 2:2, 3:1
+    min_d, max_d, avg = degree_stats(g)
+    assert min_d == 1
+    assert max_d == 2
+    assert avg == (1 + 2 + 1) / 3
+
+
+def test_degree_distribution():
+    g = Graph()
+    g.add_edge(1, 2)
+    g.add_edge(2, 3)
+    # степени: 1:1, 2:2, 3:1 -> N=3
+    dist = degree_distribution(g)
+    assert dist[1] == 2 / 3  # вершины 1 и 3
+    assert dist[2] == 1 / 3  # вершина 2
+    assert sum(dist.values()) == 1.0
