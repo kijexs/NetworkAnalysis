@@ -242,3 +242,33 @@ def global_clustering_coefficient(graph):
     if triples == 0:
         return 0.0
     return triangles * 3.0 / triples
+
+
+def degree_stats(graph):
+    """
+    Возвращает (min_degree, max_degree, avg_degree) для графа
+    """
+    degrees = [graph.degree(u) for u in graph.nodes()]
+    if not degrees:
+        return 0, 0, 0.0
+    min_deg = min(degrees)
+    max_deg = max(degrees)
+    avg_deg = sum(degrees) / len(degrees)
+    return min_deg, max_deg, avg_deg
+
+
+def degree_distribution(graph):
+    """
+    Возвращает словарь {степень: доля вершин с такой степенью}.
+    Сумма долей равна 1.0.
+    """
+    n = graph.number_of_nodes()
+    if n == 0:
+        return {}
+    # подсчитываем частоту каждой степени
+    degree_counts = defaultdict(int)
+    for u in graph.nodes():
+        degree_counts[graph.degree(u)] += 1
+    # переводим в доли
+    dist = {d: count / n for d, count in degree_counts.items()}
+    return dist
