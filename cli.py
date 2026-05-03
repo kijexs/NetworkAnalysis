@@ -9,7 +9,15 @@ from src.analysis import (
     global_clustering_coefficient,
     degree_stats,
 )
+from src.analysis import degree_distribution
+from experiments.plot_results import plot_degree_distribution
+from src.robustness import evaluate_robustness, random_removal, degree_based_removal
+from experiments.plot_results import plot_robustness
 from src.utils import bfs
+
+# глобальные переменные для результатов последней симуляции устойчивости
+_rand_res = None
+_deg_res = None
 
 def load_graph_interactive():
     path = input("Введите путь к файлу графа: ").strip()
@@ -92,6 +100,19 @@ def compute_local_clustering(g):
     cl = (2.0 * links) / (k * (k - 1))
     print(f"Локальный кластерный коэффициент для {u} = {cl:.6f}")
 
+def run_robustness_simulation(g):
+    global _rand_res, _deg_res
+    print("\nИсследование устойчивости сети")
+    percentages = list(range(0, 101, 10))
+    print("1. Случайное удаление...")
+    _rand_res = evaluate_robustness(g, percentages, random_removal)
+    print("2. Удаление по наибольшей степени...")
+    _deg_res = evaluate_robustness(g, percentages, degree_based_removal)
+
+    print("\n% удалённых | доля в МК (random) | доля в МК (degree)")
+    for (p, r), (_, d) in zip(_rand_res, _deg_res):
+        print(f"{p:3d}%        | {r:.4f}              | {d:.4f}")
+
 def main():
     print("Загружайте граф и исследуйте его характеристики.\n")
     g = None
@@ -102,6 +123,7 @@ def main():
         print("3. Расстояние между двумя вершинами")
         print("4. Локальный кластерный коэффициент вершины")
         print("5. Симуляция удаления узлов")
+        print("6. Графики (распределение степеней и устойчивость)")
         print("0. Выход")
         choice = input("Выберите действие: ").strip()
         if choice == "1":
@@ -119,11 +141,29 @@ def main():
                 compute_distance(g)
         elif choice == "4":
             if g is None:
-                print("Сначала загрузите граф (пункт 1).")
+                print("Сначала загрузите граф (пункт 1)")
             else:
                 compute_local_clustering(g)
         elif choice == "5":
-            print("Ты клубника я клубника как у нас мог родиться банан")
+            if g is None:
+                print("Сначала загрузите граф (пункт 1)")
+            else:
+                run_robustness_simulation(g)
+        elif choice == "6":
+            if g is None:
+                print("Сначала загрузите граф.")
+            else:
+                # график степеней
+                dist = degree_distribution(g)
+                plot_degree_distribution(dist, "current_graph")
+                print("График распределения степеней сохранён в results/")
+
+                # график устойчивости, если симуляция была проведена
+                if _rand_res is not None and _deg_res is not None:
+                    plot_robustness(_rand_res, _deg_res, name="interactive")
+                    print("График устойчивости сохранён в results/robustness_interactive.png")
+                else:
+                    print("Симуляция устойчивости ещё не проводилась. Выполните пункт 5.")
         elif choice == "0":
             print("Выход")
             break
