@@ -26,6 +26,7 @@ def bfs(graph, start: int) -> Dict[int, int]:
 
     return dist
 
+
 def bfs_ignore(graph, start: int, ignore: set) -> Dict[int, int]:
     """
     bfs, который пропускает вершины из множества ignore и не заходит в них.

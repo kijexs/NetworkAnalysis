@@ -3,8 +3,7 @@ import random
 from collections import defaultdict
 
 from src.graph import Graph
-from src.utils import bfs
-from src.utils import bfs_ignore
+from src.utils import bfs, bfs_ignore
 
 
 def connected_components(graph):
@@ -45,6 +44,7 @@ def connected_components_ignore(graph, ignore_set):
 
     return components
 
+
 def largest_cc_size(graph):
     """
     Возвращает (размер максимальной компоненты,
@@ -57,6 +57,7 @@ def largest_cc_size(graph):
     max_size = max(len(c) for c in comp)
     fraction = max_size / n if n > 0 else 0.0
     return max_size, fraction
+
 
 def largest_cc_size_ignore(graph, ignore_set):
     """
@@ -71,6 +72,7 @@ def largest_cc_size_ignore(graph, ignore_set):
     max_size = max(len(c) for c in comp)
     fraction = max_size / n if n > 0 else 0.0
     return max_size, fraction
+
 
 def largest_cc_vertices(graph):
     """
