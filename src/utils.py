@@ -1,6 +1,6 @@
 # bfs, вспомогательные функции и тд
 from collections import deque
-from typing import Dict
+from typing import Dict, Tuple
 
 
 def bfs(graph, start: int) -> Dict[int, int]:
@@ -48,3 +48,26 @@ def bfs_ignore(graph, start: int, ignore: set) -> Dict[int, int]:
                 queue.append(neighbor)
 
     return dist
+
+
+def bfs_with_parents(graph, start: int) -> Tuple[Dict[int, int], Dict[int, int]]:
+    """
+    Возвращает (dist, parent) - словари расстояний и родителей.
+    parent[v] - предшественник v на кратчайшем пути от start.
+    Для start parent[start] = -1.
+    """
+    dist: Dict[int, int] = {start: 0}
+
+    parent = {start: -1}
+    queue = deque([start])
+    adj = graph.adj
+    while queue:
+        current = queue.popleft()
+        d = dist[current]
+        for neighbor in adj.get(current, ()):
+            if neighbor not in dist:
+                dist[neighbor] = d + 1
+                parent[neighbor] = current
+                queue.append(neighbor)
+
+    return dist, parent
