@@ -13,13 +13,13 @@ def bfs(graph, start: int) -> Dict[int, int]:
     dist: Dict[int, int] = {start: 0}
 
     queue = deque([start])
-
+    adj = graph.adj
     while queue:
         current = queue.popleft()
         # текущее расстояние до current
         d = dist[current]
         # перебираем всех соседей current
-        for neighbor in graph.neighbors(current):
+        for neighbor in adj.get(current, ()):
             if neighbor not in dist:
                 dist[neighbor] = d + 1
                 queue.append(neighbor)
