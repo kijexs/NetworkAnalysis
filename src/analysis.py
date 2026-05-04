@@ -307,3 +307,99 @@ def degree_distribution(graph):
     # переводим в доли
     dist = {d: count / n for d, count in degree_counts.items()}
     return dist
+
+
+def _dfs_order(graph, start, visited, order):
+    """
+    dfs для первого прохода Косарайю.
+    Заполняет список order вершинами в порядке выхода (post-order).
+    """
+    stack = [(start, 0)]  # (vertex, state) state 0: вход, 1: выход
+    while stack:
+        v, state = stack.pop()
+        if state == 0:  # первый раз зашли в вершину
+            if v in visited:
+                continue
+            visited.add(v)
+            # планируем выход он произойдёт после обработки всех потомков
+            stack.append((v, 1))
+            for neighbor in graph.neighbors(v):
+                if neighbor not in visited:
+                    stack.append((neighbor, 0))
+        else:
+            order.append(v)
+
+
+def _dfs_collect(adj_dict, start, visited, component):
+    """
+    dfs для второго прохода Косарайю на транспонированном графе.
+    Собирает вершины component.
+    """
+    stack = [start]
+    while stack:
+        v = stack.pop()
+        if v in visited:
+            continue
+        visited.add(v)
+        component.append(v)
+        for neighbor in adj_dict.get(v, []):
+            if neighbor not in visited:
+                stack.append(neighbor)
+
+
+def _transpose_graph(graph):
+    """
+    Строит транспонированный граф
+    """
+    from collections import defaultdict
+
+    transposed = defaultdict(list)
+    for u in graph.nodes():
+        for v in graph.neighbors(u):
+            transposed[v].append(u)
+    # для вершин без исходящих тоже нужен ключ
+    for u in graph.nodes():
+        if u not in transposed:
+            transposed[u] = []
+    return transposed
+
+
+def kosaraju_scc(graph):
+    """
+    Возвращает список сильно связных компонент
+    """
+    # первый проход dfs по прямым рёбрам, записываем порядок выхода
+    visited = set()
+    order = []
+    for node in graph.nodes():
+        if node not in visited:
+            _dfs_order(graph, node, visited, order)
+
+    # строим транспонированный граф
+    transposed_adj = _transpose_graph(graph)
+
+    # второй проход dfs на транспонированном графе в обратном порядке
+    visited.clear()
+    components = []
+    for node in reversed(order):
+        if node not in visited:
+            comp = []
+            _dfs_collect(transposed_adj, node, visited, comp)
+            components.append(set(comp))
+    return components
+
+
+def scc_count_and_largest(graph):
+    """
+    Возвращает (число компонент сильной связности,
+    доля вершин в наибольшей компоненте сильной связности)
+    """
+    if not graph.directed:
+        return None, None
+    comps = kosaraju_scc(graph)
+    if not comps:
+        return 0, 0.0
+    n = graph.number_of_nodes()
+    max_size = max(len(c) for c in comps)
+    fraction = max_size / n if n > 0 else 0.0
+    return len(comps), fraction
