@@ -7,7 +7,7 @@ from src.analysis import (
     count_triangles,
     average_clustering_coefficient,
     global_clustering_coefficient,
-    degree_stats,
+    degree_stats, scc_count_and_largest,
 )
 from src.landmarks import LandmarksBasic, LandmarksSC, select_random_landmarks, select_degree_landmarks, \
     select_best_coverage_landmarks
@@ -41,7 +41,10 @@ def print_metrics(g):
     print(f"  Компонент слабой связности: {num_comps}")
     print(f"  Доля вершин в макс. компоненте: {lcc_frac:.4f}")
     if g.directed:
-        print("пока не реализовано")
+        scc_num, scc_frac = scc_count_and_largest(g)
+        if scc_num is not None:
+            print(f"  Компонент сильной связности: {scc_num}")
+            print(f"  Доля вершин в наибольшей SCC: {scc_frac:.4f}")
 
     lcc_verts = largest_cc_vertices(g)
     dbl_diam, dbl_perc = double_sweep_diameter(g, lcc_verts, percentile=90)
