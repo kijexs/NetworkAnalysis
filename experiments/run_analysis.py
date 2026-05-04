@@ -13,6 +13,7 @@ from src.analysis import (
     largest_cc_size,
     largest_cc_vertices,
     sampled_diameter_and_percentile,
+    scc_count_and_largest,
     snowball_diameter_percentile,
 )
 from src.graph import Graph
@@ -51,8 +52,11 @@ for filepath in all_files:
     print(f"  Компонент слабой связности: {num_comps}")
     print(f"  Доля вершин в макс. компоненте: {lcc_frac:.4f}")
 
-    # если граф ориентированный здесь нужно считать компоненты сильной связности,
-    # но пока реализация только для неориентированного. потом надо не забыть добавить!!
+    if g.directed:
+        scc_num, scc_frac = scc_count_and_largest(g)
+        if scc_num is not None:
+            print(f"  Компонент сильной связности: {scc_num}")
+            print(f"  Доля вершин в наибольшей SCC: {scc_frac:.4f}")
 
     # оценка диаметра и 90-го процентиля
     lcc_verts = largest_cc_vertices(g)
