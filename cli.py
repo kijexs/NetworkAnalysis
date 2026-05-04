@@ -9,6 +9,8 @@ from src.analysis import (
     global_clustering_coefficient,
     degree_stats,
 )
+from src.landmarks import LandmarksBasic, LandmarksSC, select_random_landmarks, select_degree_landmarks, \
+    select_best_coverage_landmarks
 from src.analysis import degree_distribution
 from experiments.plot_results import plot_degree_distribution
 from src.robustness import evaluate_robustness, random_removal, degree_based_removal
@@ -124,6 +126,7 @@ def main():
         print("4. Локальный кластерный коэффициент вершины")
         print("5. Симуляция удаления узлов")
         print("6. Графики (распределение степеней и устойчивость)")
+        print("7. Сравнение Landmarks (Basic vs SC)")
         print("0. Выход")
         choice = input("Выберите действие: ").strip()
         if choice == "1":
@@ -151,7 +154,7 @@ def main():
                 run_robustness_simulation(g)
         elif choice == "6":
             if g is None:
-                print("Сначала загрузите граф.")
+                print("Сначала загрузите граф (пункт 1)")
             else:
                 # график степеней
                 dist = degree_distribution(g)
@@ -163,7 +166,63 @@ def main():
                     plot_robustness(_rand_res, _deg_res, name="interactive")
                     print("График устойчивости сохранён в results/robustness_interactive.png")
                 else:
-                    print("Симуляция устойчивости ещё не проводилась. Выполните пункт 5.")
+                    print("Симуляция устойчивости ещё не проводилась. Выполните пункт 5")
+        elif choice == "7":
+            if g is None:
+                print("Сначала загрузите граф (пункт 1)")
+                continue
+
+            try:
+                u = int(input("Введите вершину u: "))
+                v = int(input("Введите вершину v: "))
+            except ValueError:
+                print("Некорректный ввод")
+                continue
+
+            # эталонное расстояние  bfs
+            dist_map = bfs(g, u)
+            exact = dist_map.get(v)
+            if exact is None:
+                print(f"Между {u} и {v} нет пути")
+                continue
+            print(f"Эталонное расстояние: {exact}")
+
+            # выбор стратегии
+            print("\nСтратегии выбора ориентиров:")
+            print("  1 – случайные вершины")
+            print("  2 – вершины с наибольшей степенью")
+            print("  3 – наилучшее покрытие (best coverage)")
+            strat_choice = input("Выберите стратегию (1/2/3): ").strip()
+
+            try:
+                k = int(input("Количество ориентиров (например, 10): "))
+            except ValueError:
+                print("Некорректное число, используется 10")
+                k = 20
+
+            # выбор ориентиров согласно стратегии
+            if strat_choice == "1":
+                landmarks = select_random_landmarks(g, k)
+            elif strat_choice == "2":
+                landmarks = select_degree_landmarks(g, k)
+            elif strat_choice == "3":
+                try:
+                    M = int(input("Размер выборки для coverage (по умолчанию 500): ") or 500)
+                except ValueError:
+                    M = 500
+                print(f"Вычисление best-coverage ориентиров (M={M})...")
+                landmarks = select_best_coverage_landmarks(g, k, M=M)
+            else:
+                print("Неизвестная стратегия, используются случайные")
+                landmarks = select_random_landmarks(g, k)
+
+            # создаём оценки
+            lb = LandmarksBasic(g, landmarks)
+            lsc = LandmarksSC(g, landmarks)
+
+            print("\nРезультаты оценки расстояний:")
+            print(f"  Landmarks-Basic: {lb.estimate(u, v)}")
+            print(f"  Landmarks-SC   : {lsc.estimate(u, v)}")
         elif choice == "0":
             print("Выход")
             break
