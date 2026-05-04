@@ -1,36 +1,38 @@
 # запуск и сравнение алгоритмов
-import os
-import time
-import random
 import csv
+import os
+import random
+import time
 from typing import List
 
-from src.graph import Graph
+from experiments.plot_results import plot_landmarks_results
 from src.analysis import largest_cc_vertices
+from src.graph import Graph
 from src.landmarks import (
     LandmarksBasic,
     LandmarksSC,
-    select_random_landmarks,
-    select_degree_landmarks,
     select_best_coverage_landmarks,
+    select_degree_landmarks,
+    select_random_landmarks,
 )
 from src.utils import bfs
-from experiments.plot_results import plot_landmarks_results
 
 DATASET_ROOT = "datasets"
 OUTPUT_DIR = "results"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # параметры экспериментов
-KS = [5, 10, 20, 50] # количество ориентиров
+KS = [5, 10, 20, 50]  # количество ориентиров
 STRATEGIES = ["random", "degree", "coverage"]
-NUM_PAIRS = 100 # сколько случайных пар вершин тестируем
-COVERAGE_M = 200 # параметр M для Best-Coverage
+NUM_PAIRS = 100  # сколько случайных пар вершин тестируем
+COVERAGE_M = 200  # параметр M для Best-Coverage
+
 
 def load_graph(filepath: str) -> Graph:
     norm = os.path.normpath(filepath)
     directed = "directed" in norm.split(os.sep)
     return Graph.from_file(filepath, directed=directed)
+
 
 def collect_all_files(root: str) -> List[str]:
     all_files = []
@@ -39,32 +41,36 @@ def collect_all_files(root: str) -> List[str]:
             all_files.append(os.path.join(dirpath, fname))
     return all_files
 
+
 def run():
     global landmarks
     all_files = collect_all_files(DATASET_ROOT)
     results_csv = os.path.join(OUTPUT_DIR, "landmarks_results.csv")
     with open(results_csv, "w", newline="") as f:
         writer = csv.writer(f)
-        writer.writerow([
-            "graph", "k", "strategy",
-            "basic_prep_time", "sc_prep_time",
-            "basic_query_time", "sc_query_time",
-            "basic_mre", "sc_mre",
-            "basic_exact_frac", "sc_exact_frac"
-        ])
+        writer.writerow(
+            [
+                "graph",
+                "k",
+                "strategy",
+                "basic_prep_time",
+                "sc_prep_time",
+                "basic_query_time",
+                "sc_query_time",
+                "basic_mre",
+                "sc_mre",
+                "basic_exact_frac",
+                "sc_exact_frac",
+            ]
+        )
 
     for filepath in all_files:
         name = os.path.relpath(filepath, DATASET_ROOT).replace("/", "_").replace(".", "_")
         print(f"\n===== {name} =====")
         g = load_graph(filepath)
-        n = g.number_of_nodes()
 
         # работаем с наибольшей компонентой связности
         lcc_verts = largest_cc_vertices(g)
-        if len(lcc_verts) < 10:
-            print(f"  Слишком мало вершин в наибольшей компоненте, пропускаем")
-            continue
-
         print(f"  Наибольшая компонента: {len(lcc_verts)} вершин")
 
         # генерируем тестовые пары
@@ -188,13 +194,21 @@ def run():
                 # запись в csv
                 with open(results_csv, "a", newline="") as f:
                     writer = csv.writer(f)
-                    writer.writerow([
-                        name, k, strat,
-                        prep_basic, prep_sc,
-                        query_basic, query_sc,
-                        avg_mre_basic, avg_mre_sc,
-                        frac_basic, frac_sc
-                    ])
+                    writer.writerow(
+                        [
+                            name,
+                            k,
+                            strat,
+                            prep_basic,
+                            prep_sc,
+                            query_basic,
+                            query_sc,
+                            avg_mre_basic,
+                            avg_mre_sc,
+                            frac_basic,
+                            frac_sc,
+                        ]
+                    )
 
         # строим графики для данного графа
         try:
@@ -202,16 +216,21 @@ def run():
                 name,
                 KS,
                 STRATEGIES,
-                basic_mre, sc_mre,
-                basic_exact_frac, sc_exact_frac,
-                basic_query_times, sc_query_times,
-                basic_prep_times, sc_prep_times,
-                output_dir=OUTPUT_DIR
+                basic_mre,
+                sc_mre,
+                basic_exact_frac,
+                sc_exact_frac,
+                basic_query_times,
+                sc_query_times,
+                basic_prep_times,
+                sc_prep_times,
+                output_dir=OUTPUT_DIR,
             )
         except Exception as e:
             print(f"  Ошибка при построении графиков: {e}")
 
     print("\nЭксперименты завершены. Результаты в", OUTPUT_DIR)
+
 
 if __name__ == "__main__":
     run()

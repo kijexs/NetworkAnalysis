@@ -49,15 +49,20 @@ def plot_robustness(rand_res, deg_res, name="robustness", output_dir="results"):
     plt.savefig(os.path.join(output_dir, f"robustness_{name}.png"))
     plt.close()
 
+
 def plot_landmarks_results(
     graph_name,
     ks,
     strategies,
-    basic_mre, sc_mre,
-    basic_exact_frac, sc_exact_frac,
-    basic_query_times, sc_query_times,
-    basic_prep_times, sc_prep_times,
-    output_dir="results"
+    basic_mre,
+    sc_mre,
+    basic_exact_frac,
+    sc_exact_frac,
+    basic_query_times,
+    sc_query_times,
+    basic_prep_times,
+    sc_prep_times,
+    output_dir="results",
 ):
     os.makedirs(output_dir, exist_ok=True)
 
