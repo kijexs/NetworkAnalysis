@@ -7,8 +7,10 @@ from src.analysis import (
     degree_stats,
     double_sweep_diameter,
     global_clustering_coefficient,
+    kosaraju_scc,
     largest_cc_size,
     sampled_diameter_and_percentile,
+    scc_count_and_largest,
     snowball_diameter_percentile,
 )
 from src.graph import Graph
@@ -142,3 +144,32 @@ def test_degree_distribution():
     assert dist[1] == 2 / 3  # вершины 1 и 3
     assert dist[2] == 1 / 3  # вершина 2
     assert sum(dist.values()) == 1.0
+
+
+def test_scc_simple():
+    g = Graph(directed=True)
+    g.add_edge(1, 2)
+    g.add_edge(2, 3)
+    g.add_edge(3, 1)  # треугольник
+    g.add_edge(3, 4)
+    g.add_edge(4, 5)
+    g.add_edge(5, 4)  # маленький цикл 4-5
+    comps = kosaraju_scc(g)
+    # {1,2,3} и {4,5}
+    assert len(comps) == 2
+    comp_sets = [frozenset(c) for c in comps]
+    assert frozenset({1, 2, 3}) in comp_sets
+    assert frozenset({4, 5}) in comp_sets
+
+
+def test_scc_count():
+    g = Graph(directed=True)
+    g.add_edge(1, 2)
+    g.add_edge(2, 1)
+    g.add_edge(2, 3)
+    g.add_edge(3, 2)
+    g.add_edge(4, 5)
+    g.add_edge(5, 4)
+    num, frac = scc_count_and_largest(g)
+    assert num == 2
+    assert frac == 3 / 5  # макс компонента {1,2,3} размер 3
